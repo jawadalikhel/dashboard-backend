@@ -3,19 +3,18 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
 
-router.post('/register', async (req, res) =>{
-  console.log(req.body, 'this is register')
+router.post('/register', async (req, res) => {
+  console.log(req.body, ' this is register')
 
   try {
     const password = req.body.password;
-
+    // Create our hash
     const passwordHash = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
-
-    console.log(passwordHash);
-
+    console.log(passwordHash)
+    // Create an object to put into our database into the User Model
     const userEntry = {};
-    userEntry.username = req.body.username;
-    userEntry.password = req.body.passwordHash;
+      userEntry.username = req.body.username;
+      userEntry.password = passwordHash;
 
     const createdUser = await User.create(userEntry);
     console.log(createdUser, 'MongoDB data');
@@ -24,23 +23,29 @@ router.post('/register', async (req, res) =>{
     req.session.logged = true;
     req.session.save();
 
+
     res.json({
       status: 200,
-      data: 'registration successful',
+      data: 'registration successful'
     });
 
-  } catch (err) {
-    console.log(err, 'error in /registert');
+  } catch(err) {
+    console.log(err);
   }
+
 });
 
-router.post('/login', async (req, res) =>{
-  console.log(req.body, 'this is login')
+router.post('/login', async (req, res) => {
+  console.log(req.body, 'this is login');
+
   try {
+
     const foundUser = await User.findOne({'username': req.body.username});
 
-    if(foundUser){
-      if((bcrypt.compareSync(req.body.password, foundUser.password))){
+    if (foundUser) {
+
+      if ((bcrypt.compareSync(req.body.password, foundUser.password))) {
+
         req.session.username = req.body.username;
         req.session.logged = true;
         req.session.save();
@@ -48,9 +53,11 @@ router.post('/login', async (req, res) =>{
 
         res.json({
           status: 200,
-          data: 'login unsuccessful'
+          data: 'login successful'
         });
-      }else{
+
+
+      } else {
         console.log('login unsuccessful');
         res.json({
           status: 200,
@@ -64,11 +71,11 @@ router.post('/login', async (req, res) =>{
         data: 'login unsuccessful'
       });
     }
-  } catch (err) {
-    console.log(err, 'error in /login')
+
+  } catch(err) {
+    console.log(err);
   }
 })
-
 
 
 module.exports = router;
